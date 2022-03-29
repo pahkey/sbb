@@ -1,12 +1,14 @@
 package com.mysite.sbb.answer;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
 import com.mysite.sbb.question.Question;
@@ -35,4 +37,7 @@ public class Answer {
     private SiteUser author;
     
     private LocalDateTime modifyDate;
+    
+    @ManyToMany
+    Set<SiteUser> voter;
 }
