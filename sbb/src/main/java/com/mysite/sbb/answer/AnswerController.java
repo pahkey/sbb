@@ -27,8 +27,8 @@ public class AnswerController {
     private final AnswerService answerService;
 
     @PostMapping("/create/{id}")
-    public String createAnswer(Model model, @PathVariable("id") Integer id, 
-            @Valid AnswerForm answerForm, BindingResult bindingResult) {
+    public String createAnswer(Model model, @PathVariable("id") Integer id, @Valid AnswerForm answerForm,
+            BindingResult bindingResult) {
         Optional<Question> question = this.questionService.getQuestion(id);
         if (question.isPresent()) {
             if (bindingResult.hasErrors()) {
