@@ -17,8 +17,8 @@ public class QuestionService {
         List<Question> questionList = this.questionRepository.findAll();
         return questionList;
     }
-    
-    public Optional<Question> getQuestion(Integer id) {  
-        return this.questionRepository.findById(id);  
+
+    public Optional<Question> getQuestion(Integer id) {
+        return this.questionRepository.findById(id);
     }
 }
