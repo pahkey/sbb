@@ -1,6 +1,7 @@
 package com.mysite.sbb.question;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -15,5 +16,9 @@ public class QuestionService {
     public List<Question> getList() {
         List<Question> questionList = this.questionRepository.findAll();
         return questionList;
+    }
+    
+    public Optional<Question> getQuestion(Integer id) {  
+        return this.questionRepository.findById(id);  
     }
 }
