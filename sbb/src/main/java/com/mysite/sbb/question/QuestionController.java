@@ -71,4 +71,55 @@ public class QuestionController {
         }
         return "redirect:/question/list";
     }
+    
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/modify/{id}")
+    public String questionModify(QuestionForm questionForm, @PathVariable("id") Integer id, Principal principal) {
+        Optional<Question> question = this.questionService.getQuestion(id);
+        if (question.isPresent()) {
+            Question q = question.get();
+            if(!q.getAuthor().getUsername().equals(principal.getName())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
+            }
+            questionForm.setSubject(q.getSubject());
+            questionForm.setContent(q.getContent());
+        }
+        return "question_form";
+    }
+    
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/modify/{id}")
+    public String questionModify(@Valid QuestionForm questionForm, BindingResult bindingResult, 
+            Principal principal, @PathVariable("id") Integer id) {
+        if (bindingResult.hasErrors()) {
+            return "question_form";
+        }
+        Optional<Question> question = this.questionService.getQuestion(id);
+        if (question.isPresent()) {
+            Question q = question.get();
+            if (!q.getAuthor().getUsername().equals(principal.getName())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
+            }
+            this.questionService.modify(q, questionForm.getSubject(), questionForm.getContent());
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "entity not found");
+        }
+        return String.format("redirect:/question/detail/%s", id);
+    }
+    
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/delete/{id}")
+    public String questionDelete(Principal principal, @PathVariable("id") Integer id) {
+        Optional<Question> question = this.questionService.getQuestion(id);
+        if (question.isPresent()) {
+            Question q = question.get();
+            if (!q.getAuthor().getUsername().equals(principal.getName())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
+            }
+            this.questionService.delete(q);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "entity not found");
+        }
+        return "redirect:/";
+    }
 }
