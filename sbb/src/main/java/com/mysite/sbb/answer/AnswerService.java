@@ -55,13 +55,6 @@ public class AnswerService {
     }
     
     public void delete(AnswerDto answerDto) {
-        
-        
-
-        
-        System.out.println("HELLO2222:"+answerDto.getId());
-        
-//        this.answerRepository.delete(of(answerDto));
-        this.answerRepository.deleteById(answerDto.getId());
+        this.answerRepository.delete(of(answerDto));
     }
 }
