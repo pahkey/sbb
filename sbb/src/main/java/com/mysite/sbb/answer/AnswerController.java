@@ -1,7 +1,6 @@
 package com.mysite.sbb.answer;
 
 import java.security.Principal;
-import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -16,16 +15,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.mysite.sbb.question.Question;
+import com.mysite.sbb.question.QuestionDto;
 import com.mysite.sbb.question.QuestionService;
-import com.mysite.sbb.user.SiteUser;
+import com.mysite.sbb.user.SiteUserDto;
 import com.mysite.sbb.user.UserService;
 
 import lombok.RequiredArgsConstructor;
 
+@RequestMapping("/answer")
 @RequiredArgsConstructor
 @Controller
-@RequestMapping("/answer")
 public class AnswerController {
 
     private final QuestionService questionService;
@@ -36,32 +35,26 @@ public class AnswerController {
     @PostMapping("/create/{id}")
     public String createAnswer(Model model, @PathVariable("id") Integer id, 
             @Valid AnswerForm answerForm, BindingResult bindingResult, Principal principal) {
-        Optional<Question> question = this.questionService.getQuestion(id);
-        Optional<SiteUser> user = this.userService.getUser(principal.getName());
-        
-        if (question.isPresent() && user.isPresent()) {
-            if (bindingResult.hasErrors()) {
-                model.addAttribute("question", question.get());
-                return "question_detail";
-            }
-            Answer a = this.answerService.create(question.get(), answerForm.getContent(), user.get());
-            return String.format("redirect:/question/detail/%s#answer_%s", a.getQuestion().getId(), a.getId());
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "entity not found");
+        QuestionDto questionDto = this.questionService.getQuestion(id);
+        SiteUserDto siteUserDto = this.userService.getUser(principal.getName());
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("question", questionDto);
+            return "question_detail";
         }
+        AnswerDto answerDto = this.answerService.create(questionDto, 
+                answerForm.getContent(), siteUserDto);
+        return String.format("redirect:/question/detail/%s#answer_%s", 
+                answerDto.getQuestion().getId(), answerDto.getId());
     }
     
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/modify/{id}")
     public String answerModify(AnswerForm answerForm, @PathVariable("id") Integer id, Principal principal) {
-        Optional<Answer> answer = this.answerService.getAnswer(id);
-        if (answer.isPresent()) {
-            Answer a = answer.get();
-            if (!a.getAuthor().getUsername().equals(principal.getName())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
-            }
-            answerForm.setContent(a.getContent());
+        AnswerDto answerDto = this.answerService.getAnswer(id);
+        if (!answerDto.getAuthor().getUsername().equals(principal.getName())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
         }
+        answerForm.setContent(answerDto.getContent());
         return "answer_form";
     }
     
@@ -72,47 +65,33 @@ public class AnswerController {
         if (bindingResult.hasErrors()) {
             return "answer_form";
         }
-        Optional<Answer> answer = this.answerService.getAnswer(id);
-        if (answer.isPresent()) {
-            Answer a = answer.get();
-            if (!a.getAuthor().getUsername().equals(principal.getName())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
-            }
-            this.answerService.modify(a, answerForm.getContent());
-            return String.format("redirect:/question/detail/%s#answer_%s", a.getQuestion().getId(), a.getId());
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "entity not found");
+        AnswerDto answerDto = this.answerService.getAnswer(id);
+        if (!answerDto.getAuthor().getUsername().equals(principal.getName())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
         }
+        this.answerService.modify(answerDto, answerForm.getContent());
+        return String.format("redirect:/question/detail/%s#answer_%s", 
+                answerDto.getQuestion().getId(), answerDto.getId());
     }
     
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/delete/{id}")
     public String answerDelete(Principal principal, @PathVariable("id") Integer id) {
-        Optional<Answer> answer = this.answerService.getAnswer(id);
-        if (answer.isPresent()) {
-            Answer a = answer.get();
-            if (!a.getAuthor().getUsername().equals(principal.getName())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
-            }
-            this.answerService.delete(a);
-            return String.format("redirect:/question/detail/%s", a.getQuestion().getId());
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "entity not found");
+        AnswerDto answerDto = this.answerService.getAnswer(id);
+        if (!answerDto.getAuthor().getUsername().equals(principal.getName())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
         }
+        this.answerService.delete(answerDto);
+        return String.format("redirect:/question/detail/%s", answerDto.getQuestion().getId());
     }
     
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/vote/{id}")
     public String answerVote(Principal principal, @PathVariable("id") Integer id) {
-        Optional<Answer> answer = this.answerService.getAnswer(id);
-        Optional<SiteUser> user = this.userService.getUser(principal.getName());
-        if (answer.isPresent() && user.isPresent()) {
-            Answer a = answer.get();
-            SiteUser u = user.get();
-            this.answerService.vote(a, u);
-            return String.format("redirect:/question/detail/%s#answer_%s", a.getQuestion().getId(), a.getId());
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "entity not found");
-        }
+        AnswerDto answerDto = this.answerService.getAnswer(id);
+        SiteUserDto siteUserDto = this.userService.getUser(principal.getName());
+        this.answerService.vote(answerDto, siteUserDto);
+        return String.format("redirect:/question/detail/%s#answer_%s", 
+                answerDto.getQuestion().getId(), answerDto.getId());
     }
 }
