@@ -3,10 +3,12 @@ package com.mysite.sbb.answer;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import com.mysite.sbb.question.Question;
-import com.mysite.sbb.user.SiteUser;
+import com.mysite.sbb.DataNotFoundException;
+import com.mysite.sbb.question.QuestionDto;
+import com.mysite.sbb.user.SiteUserDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,34 +17,51 @@ import lombok.RequiredArgsConstructor;
 public class AnswerService {
 
     private final AnswerRepository answerRepository;
+    private final ModelMapper modelMapper;
 
-    public Answer create(Question question, String content, SiteUser user) {
-        Answer a = new Answer();
-        a.setContent(content);
-        a.setCreateDate(LocalDateTime.now());
-        a.setQuestion(question);
-        a.setAuthor(user);
-        a = this.answerRepository.save(a);
-        return a;
+    private Answer of(AnswerDto answerDto) {
+        return modelMapper.map(answerDto, Answer.class);
     }
     
-    public Optional<Answer> getAnswer(Integer id) {
-        return this.answerRepository.findById(id);
+    private AnswerDto of(Answer answer) {
+        return modelMapper.map(answer, AnswerDto.class);
+    }
+    
+    public AnswerDto create(QuestionDto questionDto, String content, SiteUserDto author) {
+        AnswerDto answerDto = new AnswerDto();
+        answerDto.setContent(content);
+        answerDto.setCreateDate(LocalDateTime.now());
+        answerDto.setQuestion(questionDto);
+        answerDto.setAuthor(author);
+        Answer answer = of(answerDto);
+        answer = this.answerRepository.save(answer);
+        answerDto.setId(answer.getId());
+        return answerDto;
+    }
+    
+    public AnswerDto getAnswer(Integer id) {
+        Optional<Answer> answer = this.answerRepository.findById(id);
+        if (answer.isPresent()) {
+            return of(answer.get());
+        } else {
+            throw new DataNotFoundException("question not found");
+        }
     }
 
-    public Answer modify(Answer a, String content) {
-        a.setContent(content);
-        a.setModifyDate(LocalDateTime.now());
-        a = this.answerRepository.save(a);
-        return a;
+    public AnswerDto modify(AnswerDto answerDto, String content) {
+        answerDto.setContent(content);
+        answerDto.setModifyDate(LocalDateTime.now());
+        this.answerRepository.save(of(answerDto));
+        return answerDto;
     }
     
-    public void delete(Answer a) {
-        this.answerRepository.delete(a);
+    public void delete(AnswerDto answerDto) {
+        this.answerRepository.delete(of(answerDto));
     }
     
-    public Answer vote(Answer a, SiteUser user) {
-        a.voter.add(user);
-        return this.answerRepository.save(a);
+    public AnswerDto vote(AnswerDto answerDto, SiteUserDto siteUserDto) {
+        answerDto.getVoter().add(siteUserDto);
+        this.answerRepository.save(of(answerDto));
+        return answerDto;
     }
 }
