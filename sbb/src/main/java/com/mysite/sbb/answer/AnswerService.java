@@ -3,10 +3,11 @@ package com.mysite.sbb.answer;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import com.mysite.sbb.question.Question;
-import com.mysite.sbb.user.SiteUser;
+import com.mysite.sbb.question.QuestionDto;
+import com.mysite.sbb.user.SiteUserDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,15 +16,21 @@ import lombok.RequiredArgsConstructor;
 public class AnswerService {
 
     private final AnswerRepository answerRepository;
+    private final ModelMapper modelMapper;
 
-    public Answer create(Question question, String content, SiteUser user) {
-        Answer a = new Answer();
-        a.setContent(content);
-        a.setCreateDate(LocalDateTime.now());
-        a.setQuestion(question);
-        a.setAuthor(user);
-        a = this.answerRepository.save(a);
-        return a;
+    private Answer of(AnswerDto answerDto) {
+        return modelMapper.map(answerDto, Answer.class);
+    }
+    
+    public AnswerDto create(QuestionDto questionDto, String content, SiteUserDto author) {
+        AnswerDto answerDto = new AnswerDto();
+        answerDto.setContent(content);
+        answerDto.setCreateDate(LocalDateTime.now());
+        answerDto.setQuestion(questionDto);
+        answerDto.setAuthor(author);
+        Answer answer = of(answerDto);
+        this.answerRepository.save(answer);
+        return answerDto;
     }
     
     public Optional<Answer> getAnswer(Integer id) {
