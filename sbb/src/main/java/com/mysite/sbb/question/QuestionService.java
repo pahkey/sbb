@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import com.mysite.sbb.DataNotFoundException;
+
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -25,7 +27,12 @@ public class QuestionService {
         return questionDtoList;
     }
     
-    public Optional<Question> getQuestion(Integer id) {  
-        return this.questionRepository.findById(id);  
+    public QuestionDto getQuestion(Integer id) {  
+        Optional<Question> question = this.questionRepository.findById(id);
+        if (question.isPresent()) {
+            return of(question.get());
+        } else {
+            throw new DataNotFoundException("question not found");
+        }
     }
 }

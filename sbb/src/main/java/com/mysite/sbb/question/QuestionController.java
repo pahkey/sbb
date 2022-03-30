@@ -1,20 +1,17 @@
 package com.mysite.sbb.question;
 
 import java.util.List;
-import java.util.Optional;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
 
+@RequestMapping("/question")
 @RequiredArgsConstructor
 @Controller
-@RequestMapping("/question")
 public class QuestionController {
     
     private final QuestionService questionService;
@@ -28,12 +25,8 @@ public class QuestionController {
     
     @RequestMapping(value = "/detail/{id}")
     public String detail(Model model, @PathVariable("id") Integer id) {
-        Optional<Question> question = this.questionService.getQuestion(id);
-        if (question.isPresent()) {
-            model.addAttribute("question", question.get());
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "entity not found");
-        }
+        QuestionDto question = this.questionService.getQuestion(id);
+        model.addAttribute("question", question);
         return "question_detail";
     }
 }
