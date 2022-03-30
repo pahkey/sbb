@@ -74,8 +74,9 @@ public class QuestionService {
         this.questionRepository.delete(of(questionDto));
     }
     
-    public Question vote(Question q, SiteUser user) {
-        q.voter.add(user);
-        return this.questionRepository.save(q);
+    public QuestionDto vote(QuestionDto questionDto, SiteUserDto siteUserDto) {
+        questionDto.getVoter().add(siteUserDto);
+        this.questionRepository.save(of(questionDto));
+        return questionDto;
     }
 }

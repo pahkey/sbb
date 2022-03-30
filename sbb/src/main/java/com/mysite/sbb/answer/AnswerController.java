@@ -86,15 +86,9 @@ public class AnswerController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/vote/{id}")
     public String answerVote(Principal principal, @PathVariable("id") Integer id) {
-        Optional<Answer> answer = this.answerService.getAnswer(id);
-        Optional<SiteUser> user = this.userService.getUser(principal.getName());
-        if (answer.isPresent() && user.isPresent()) {
-            Answer a = answer.get();
-            SiteUser u = user.get();
-            this.answerService.vote(a, u);
-            return String.format("redirect:/question/detail/%s", a.getQuestion().getId());
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "entity not found");
-        }
+        AnswerDto answerDto = this.answerService.getAnswer(id);
+        SiteUserDto siteUserDto = this.userService.getUser(principal.getName());
+        this.answerService.vote(answerDto, siteUserDto);
+        return String.format("redirect:/question/detail/%s", answerDto.getQuestion().getId());
     }
 }

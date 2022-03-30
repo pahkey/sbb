@@ -1,6 +1,7 @@
 package com.mysite.sbb.answer;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import com.mysite.sbb.question.QuestionDto;
 import com.mysite.sbb.user.SiteUserDto;
@@ -17,4 +18,5 @@ public class AnswerDto {
     private QuestionDto question;
     private SiteUserDto author;
     private LocalDateTime modifyDate;
+    private Set<SiteUserDto> voter;
 }
