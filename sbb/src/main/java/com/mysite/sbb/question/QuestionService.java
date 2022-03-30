@@ -13,10 +13,14 @@ public class QuestionService {
 
     private final QuestionRepository questionRepository;
     private final ModelMapper modelMapper;
-
-    public List<Question> getList() {
+    
+    private QuestionDto of(Question question) {
+        return modelMapper.map(question, QuestionDto.class);
+    }
+    
+    public List<QuestionDto> getList() {
         List<Question> questionList = this.questionRepository.findAll();
-        
-        return questionList;
+        List<QuestionDto> questionDtoList = questionList.stream().map(q -> of(q)).toList();
+        return questionDtoList;
     }
 }
