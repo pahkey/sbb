@@ -18,4 +18,5 @@ public class QuestionDto {
     private LocalDateTime createDate;
     private List<AnswerDto> answerList;
     private SiteUserDto author;
+    private LocalDateTime modifyDate;
 }

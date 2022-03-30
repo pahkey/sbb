@@ -4,6 +4,7 @@ import java.security.Principal;
 
 import javax.validation.Valid;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.mysite.sbb.question.QuestionDto;
 import com.mysite.sbb.question.QuestionService;
@@ -47,14 +49,11 @@ public class AnswerController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/modify/{id}")
     public String answerModify(AnswerForm answerForm, @PathVariable("id") Integer id, Principal principal) {
-        Optional<Answer> answer = this.answerService.getAnswer(id);
-        if (answer.isPresent()) {
-            Answer a = answer.get();
-            if (!a.getAuthor().getUsername().equals(principal.getName())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
-            }
-            answerForm.setContent(a.getContent());
+        AnswerDto answerDto = this.answerService.getAnswer(id);
+        if (!answerDto.getAuthor().getUsername().equals(principal.getName())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
         }
+        answerForm.setContent(answerDto.getContent());
         return "answer_form";
     }
     
@@ -65,32 +64,22 @@ public class AnswerController {
         if (bindingResult.hasErrors()) {
             return "answer_form";
         }
-        Optional<Answer> answer = this.answerService.getAnswer(id);
-        if (answer.isPresent()) {
-            Answer a = answer.get();
-            if (!a.getAuthor().getUsername().equals(principal.getName())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
-            }
-            this.answerService.modify(a, answerForm.getContent());
-            return String.format("redirect:/question/detail/%s", a.getQuestion().getId());
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "entity not found");
+        AnswerDto answerDto = this.answerService.getAnswer(id);
+        if (!answerDto.getAuthor().getUsername().equals(principal.getName())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
         }
+        this.answerService.modify(answerDto, answerForm.getContent());
+        return String.format("redirect:/question/detail/%s", answerDto.getQuestion().getId());
     }
     
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/delete/{id}")
     public String answerDelete(Principal principal, @PathVariable("id") Integer id) {
-        Optional<Answer> answer = this.answerService.getAnswer(id);
-        if (answer.isPresent()) {
-            Answer a = answer.get();
-            if (!a.getAuthor().getUsername().equals(principal.getName())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
-            }
-            this.answerService.delete(a);
-            return String.format("redirect:/question/detail/%s", a.getQuestion().getId());
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "entity not found");
+        AnswerDto answerDto = this.answerService.getAnswer(id);
+        if (!answerDto.getAuthor().getUsername().equals(principal.getName())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
         }
+        this.answerService.delete(answerDto);
+        return String.format("redirect:/question/detail/%s", answerDto.getQuestion().getId());
     }
 }

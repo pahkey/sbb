@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import com.mysite.sbb.DataNotFoundException;
 import com.mysite.sbb.question.QuestionDto;
 import com.mysite.sbb.user.SiteUserDto;
 
@@ -22,6 +23,10 @@ public class AnswerService {
         return modelMapper.map(answerDto, Answer.class);
     }
     
+    private AnswerDto of(Answer answer) {
+        return modelMapper.map(answer, AnswerDto.class);
+    }
+    
     public AnswerDto create(QuestionDto questionDto, String content, SiteUserDto author) {
         AnswerDto answerDto = new AnswerDto();
         answerDto.setContent(content);
@@ -33,18 +38,30 @@ public class AnswerService {
         return answerDto;
     }
     
-    public Optional<Answer> getAnswer(Integer id) {
-        return this.answerRepository.findById(id);
+    public AnswerDto getAnswer(Integer id) {
+        Optional<Answer> answer = this.answerRepository.findById(id);
+        if (answer.isPresent()) {
+            return of(answer.get());
+        } else {
+            throw new DataNotFoundException("question not found");
+        }
     }
 
-    public Answer modify(Answer a, String content) {
-        a.setContent(content);
-        a.setModifyDate(LocalDateTime.now());
-        a = this.answerRepository.save(a);
-        return a;
+    public AnswerDto modify(AnswerDto answerDto, String content) {
+        answerDto.setContent(content);
+        answerDto.setModifyDate(LocalDateTime.now());
+        this.answerRepository.save(of(answerDto));
+        return answerDto;
     }
     
-    public void delete(Answer a) {
-        this.answerRepository.delete(a);
+    public void delete(AnswerDto answerDto) {
+        
+        
+
+        
+        System.out.println("HELLO2222:"+answerDto.getId());
+        
+//        this.answerRepository.delete(of(answerDto));
+        this.answerRepository.deleteById(answerDto.getId());
     }
 }
