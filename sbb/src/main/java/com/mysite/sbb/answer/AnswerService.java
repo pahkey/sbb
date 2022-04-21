@@ -1,34 +1,25 @@
 package com.mysite.sbb.answer;
 
-import java.time.LocalDateTime;
-
-import org.modelmapper.ModelMapper;
+import com.mysite.sbb.question.Question;
+import com.mysite.sbb.user.SiteUser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import com.mysite.sbb.question.QuestionDto;
-import com.mysite.sbb.user.SiteUserDto;
-
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
 public class AnswerService {
 
     private final AnswerRepository answerRepository;
-    private final ModelMapper modelMapper;
 
-    private Answer of(AnswerDto answerDto) {
-        return modelMapper.map(answerDto, Answer.class);
-    }
-    
-    public AnswerDto create(QuestionDto questionDto, String content, SiteUserDto author) {
-        AnswerDto answerDto = new AnswerDto();
-        answerDto.setContent(content);
-        answerDto.setCreateDate(LocalDateTime.now());
-        answerDto.setQuestion(questionDto);
-        answerDto.setAuthor(author);
-        Answer answer = of(answerDto);
+
+    public void create(Question question, String content, SiteUser author) {
+        Answer answer = new Answer();
+        answer.setContent(content);
+        answer.setCreateDate(LocalDateTime.now());
+        answer.setQuestion(question);
+        answer.setAuthor(author);
         this.answerRepository.save(answer);
-        return answerDto;
     }
 }
