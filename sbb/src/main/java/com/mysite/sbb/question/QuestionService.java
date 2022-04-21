@@ -1,77 +1,60 @@
 package com.mysite.sbb.question;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.modelmapper.ModelMapper;
+import com.mysite.sbb.DataNotFoundException;
+import com.mysite.sbb.user.SiteUser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.mysite.sbb.DataNotFoundException;
-import com.mysite.sbb.user.SiteUserDto;
-
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
 public class QuestionService {
 
     private final QuestionRepository questionRepository;
-    private final ModelMapper modelMapper;
-    
-    private QuestionDto of(Question question) {
-        return modelMapper.map(question, QuestionDto.class);
-    }
-    
-    private Question of(QuestionDto questionDto) {
-        return modelMapper.map(questionDto, Question.class);
-    }
-    
-    public Page<QuestionDto> getList(int page) {
+
+    public Page<Question> getList(int page) {
         List<Sort.Order> sorts = new ArrayList<>();
         sorts.add(Sort.Order.desc("createDate"));
         Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts));
-        Page<Question> questionList = this.questionRepository.findAll(pageable);
-        Page<QuestionDto> questionDtoList = questionList.map(q -> of(q));
-        return questionDtoList;
+        return this.questionRepository.findAll(pageable);
     }
     
-    public QuestionDto getQuestion(Integer id) {  
+    public Question getQuestion(Integer id) {
         Optional<Question> question = this.questionRepository.findById(id);
         if (question.isPresent()) {
-            return of(question.get());
+            return question.get();
         } else {
             throw new DataNotFoundException("question not found");
         }
     }
-    
-    public QuestionDto create(String subject, String content, SiteUserDto user) {
-        QuestionDto questionDto = new QuestionDto();
-        questionDto.setSubject(subject);
-        questionDto.setContent(content);
-        questionDto.setCreateDate(LocalDateTime.now());
-        questionDto.setAuthor(user);
-        Question question = of(questionDto);
+
+    public Question create(String subject, String content, SiteUser user) {
+        Question question = new Question();
+        question.setSubject(subject);
+        question.setContent(content);
+        question.setCreateDate(LocalDateTime.now());
+        question.setAuthor(user);
         this.questionRepository.save(question);
-        return questionDto;
+        return question;
     }
-    
-    public QuestionDto modify(QuestionDto questionDto, String subject, String content) {
-        questionDto.setSubject(subject);
-        questionDto.setContent(content);
-        questionDto.setModifyDate(LocalDateTime.now());
-        Question question = of(questionDto);
+
+    public void modify(Question question, String subject, String content) {
+        question.setSubject(subject);
+        question.setContent(content);
+        question.setModifyDate(LocalDateTime.now());
         this.questionRepository.save(question);
-        return questionDto;
     }
-    
-    public void delete(QuestionDto questionDto) {
-        this.questionRepository.delete(of(questionDto));
+
+    public void delete(Question question) {
+        this.questionRepository.delete(question);
     }
     
     public QuestionDto vote(QuestionDto questionDto, SiteUserDto siteUserDto) {
