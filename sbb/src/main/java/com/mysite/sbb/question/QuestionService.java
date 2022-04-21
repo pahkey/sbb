@@ -45,17 +45,15 @@ public class QuestionService {
         this.questionRepository.save(question);
         return question;
     }
-    
-    public QuestionDto modify(QuestionDto questionDto, String subject, String content) {
-        questionDto.setSubject(subject);
-        questionDto.setContent(content);
-        questionDto.setModifyDate(LocalDateTime.now());
-        Question question = of(questionDto);
+
+    public void modify(Question question, String subject, String content) {
+        question.setSubject(subject);
+        question.setContent(content);
+        question.setModifyDate(LocalDateTime.now());
         this.questionRepository.save(question);
-        return questionDto;
     }
-    
-    public void delete(QuestionDto questionDto) {
-        this.questionRepository.delete(of(questionDto));
+
+    public void delete(Question question) {
+        this.questionRepository.delete(question);
     }
 }
