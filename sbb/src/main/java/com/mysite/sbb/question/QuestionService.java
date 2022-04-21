@@ -3,6 +3,7 @@ package com.mysite.sbb.question;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class QuestionService {
     
     public List<QuestionDto> getList() {
         List<Question> questionList = this.questionRepository.findAll();
-        List<QuestionDto> questionDtoList = questionList.stream().map(q -> of(q)).toList();
+        List<QuestionDto> questionDtoList = questionList.stream().map(q -> of(q)).collect(Collectors.toList());
         return questionDtoList;
     }
     
