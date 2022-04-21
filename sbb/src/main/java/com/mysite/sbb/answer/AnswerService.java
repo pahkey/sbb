@@ -43,10 +43,9 @@ public class AnswerService {
     public void delete(Answer answer) {
         this.answerRepository.delete(answer);
     }
-    
-    public AnswerDto vote(AnswerDto answerDto, SiteUserDto siteUserDto) {
-        answerDto.getVoter().add(siteUserDto);
-        this.answerRepository.save(of(answerDto));
-        return answerDto;
+
+    public void vote(Answer answer, SiteUser siteUser) {
+        answer.getVoter().add(siteUser);
+        this.answerRepository.save(answer);
     }
 }
