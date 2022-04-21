@@ -18,14 +18,14 @@ public class QuestionController {
 
     @RequestMapping("/list")
     public String list(Model model) {
-        List<QuestionDto> questionList = this.questionService.getList();
+        List<Question> questionList = this.questionService.getList();
         model.addAttribute("questionList", questionList);
         return "question_list";
     }
 
     @RequestMapping(value = "/detail/{id}")
     public String detail(Model model, @PathVariable("id") Integer id) {
-        QuestionDto question = this.questionService.getQuestion(id);
+        Question question = this.questionService.getQuestion(id);
         model.addAttribute("question", question);
         return "question_detail";
     }
